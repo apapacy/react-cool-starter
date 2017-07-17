@@ -30,7 +30,7 @@ export default (state: State = initialState, action: Action): State => {
     case USERS_SUCCESS:
       return _.assign({}, state, {
         readyStatus: USERS_SUCCESS,
-        list: action.data,
+        list: action.value.data,
       });
     default:
       return state;

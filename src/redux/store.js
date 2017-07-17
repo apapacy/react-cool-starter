@@ -5,7 +5,7 @@ import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
 import axios from 'axios';
 import chalk from 'chalk';
-import clientMiddleware from './clientMiddleware';
+import promisedMiddleware from './promisedMiddleware';
 
 import type { Store } from '../types';
 import rootReducer from './reducers';
@@ -14,7 +14,7 @@ export default (history: Object, initialState: Object = {}): Store => {
   const middlewares = [
     thunk.withExtraArgument(axios),
     routerMiddleware(history),
-    clientMiddleware(axios),
+    promisedMiddleware(axios),
   ];
 
   const enhancers = [

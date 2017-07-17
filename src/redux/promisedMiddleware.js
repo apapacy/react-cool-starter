@@ -10,10 +10,10 @@ export default fetch => ({ dispatch, getState }) => next => (action) => {
   next({ ...rest, type: REQUEST });
   const actionPromise = promise(fetch);
   actionPromise.then(
-    res => next({ ...rest, data: res.data, type: SUCCESS }),
-    err => next({ ...rest, err, type: FAILURE }),
-  ).catch((err) => {
-    next({ ...rest, err, type: FAILURE });
+    value => next({ ...rest, value, type: SUCCESS }),
+    error => next({ ...rest, error, type: FAILURE }),
+  ).catch((error) => {
+    next({ ...rest, error, type: FAILURE });
   });
   return actionPromise;
 };
