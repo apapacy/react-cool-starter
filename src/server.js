@@ -20,7 +20,6 @@ import createHistory from 'history/createMemoryHistory';
 import configureStore from './redux/store';
 import Html from './utils/Html';
 import App from './containers/App';
-import routes from './routes';
 import { port, host } from './config';
 
 const app = express();
@@ -72,61 +71,31 @@ app.get('*', (req, res) => {
     return;
   }
 
-  // Load data on server-side
-  const loadBranchData = () => {
-    const branch = matchRoutes(routes, req.url);
+  const routerContext = {};
+  const component = (
+    <Provider store={store}>
+      <StaticRouter location={req.url} context={routerContext} history={history}>
+        <App />
+      </StaticRouter>
+    </Provider>);
+  const time = (new Date()).getTime();
+  const htmlContent = renderToString(component);
+  console.log((new Date()).getTime() - time);
 
-    const promises = branch.map(({ route, match }) => {
-      // Dispatch the action(s) through the loadData method of "./routes.js"
-      if (route.loadData) return route.loadData(store.dispatch, match.params);
+  // Check if the render result contains a redirect, if so we need to set
+  // the specific status and redirect header and end the response
+  if (routerContext.url) {
+    res.status(301).setHeader('Location', routerContext.url);
+    res.end();
 
-      return Promise.resolve(null);
-    });
+    return;
+  }
 
-    return Promise.all(promises);
-  };
+  // Checking is page is 404
+  const status = routerContext.status === '404' ? 404 : 200;
 
-  // Send response after all the action(s) are dispathed
-  loadBranchData()
-    .then(() => {
-      // Setup React-Router server-side rendering
-      const routerContext = {};
-      const Component = (
-        <Provider store={store}>
-          <StaticRouter location={req.url} context={routerContext}>
-            <App />
-          </StaticRouter>
-        </Provider>);
-      const time = (new Date()).getTime();
-      const stream = new StringStream('');
-      ReactDOMStream.renderToString(Component)
-      .on('end', () => {
-		      res.end();
-          console.log('***** end');
-        }).pipe(res, {end:false});
-      console.log((new Date()).getTime() - time);
-      const htmlContent = '******************';// renderToString(component);
-
-      // Check if the render result contains a redirect, if so we need to set
-      // the specific status and redirect header and end the response
-      if (routerContext.url) {
-        res.status(301).setHeader('Location', routerContext.url);
-        res.end();
-
-        return;
-      }
-
-      // Checking is page is 404
-      const status = routerContext.status === '404' ? 404 : 200;
-
-      // Pass the route and initial state into html template
-      res.status(status).send(renderHtml(store, htmlContent));
-    })
-    .catch((err) => {
-      res.status(404).send('Not Found :(');
-
-      console.error(`==> 😭  Rendering routes error: ${err}`);
-    });
+  // Pass the route and initial state into html template
+  res.status(status).send(renderHtml(store, htmlContent));
 });
 
 if (port) {

@@ -1,30 +1,19 @@
 /* @flow */
-
-import type { Dispatch } from './types';
-import { fetchUsersIfNeeded } from './containers/Home/action';
-import { fetchUserIfNeeded } from './containers/UserInfo/action';
+import React from 'react';
+import { Route, Switch, Router } from 'react-router-dom';
+import App from './containers/App';
 import HomePage from './containers/Home';
 import UserInfoPage from './containers/UserInfo';
 import NotFoundPage from './containers/NotFound';
 
-export default [
-  {
-    path: '/',
-    exact: true,
-    component: HomePage,  // Add your route here
-    loadData: (dispatch: Dispatch) => Promise.all([
-      dispatch(fetchUsersIfNeeded()), // Register your server-side call action(s) here
-    ]),
-  },
-  {
-    path: '/UserInfo/:id',
-    component: UserInfoPage,
-    loadData: (dispatch: Dispatch, params: Object) => Promise.all([
-      dispatch(fetchUserIfNeeded(params.id)),
-    ]),
-  },
-  {
-    path: '*',
-    component: NotFoundPage,
-  },
-];
+export default (
+  <Router>
+    <App>
+      <Switch>
+        <Route exact path="/" component={HomePage} />
+        <Route path="/UserInfo/:id" component={UserInfoPage} />
+        <Route component={NotFoundPage} />
+      </Switch>
+    </App>
+  </Router>
+);
