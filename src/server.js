@@ -9,6 +9,8 @@ import hpp from 'hpp';
 import favicon from 'serve-favicon';
 import React from 'react';
 import { renderToString, renderToStaticMarkup } from 'react-dom/server';
+import ReactDOMStream from 'react-dom-stream/server';
+import StringStream from 'string-stream';
 import { StaticRouter } from 'react-router-dom';
 import { matchRoutes } from 'react-router-config';
 import { Provider } from 'react-redux';
@@ -89,13 +91,21 @@ app.get('*', (req, res) => {
     .then(() => {
       // Setup React-Router server-side rendering
       const routerContext = {};
-      const htmlContent = renderToString(
+      const Component = (
         <Provider store={store}>
           <StaticRouter location={req.url} context={routerContext}>
             <App />
           </StaticRouter>
-        </Provider>,
-      );
+        </Provider>);
+      const time = (new Date()).getTime();
+      const stream = new StringStream('');
+      ReactDOMStream.renderToString(Component)
+      .on('end', () => {
+		      res.end();
+          console.log('***** end');
+        }).pipe(res, {end:false});
+      console.log((new Date()).getTime() - time);
+      const htmlContent = '******************';// renderToString(component);
 
       // Check if the render result contains a redirect, if so we need to set
       // the specific status and redirect header and end the response

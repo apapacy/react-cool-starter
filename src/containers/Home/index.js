@@ -28,7 +28,18 @@ export class Home extends PureComponent {
     fetchUsersIfNeeded: () => {},
   };
 
+  constructor(...args) {
+    super(...args);
+    console.log('************************* in constructor');
+  }
+
   componentDidMount() {
+    console.log('********************** component did mount');
+    this.props.fetchUsersIfNeeded();
+  }
+
+  componentWillMount() {
+    console.log('********************** component will mount');
     this.props.fetchUsersIfNeeded();
   }
 
