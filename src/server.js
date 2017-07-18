@@ -9,8 +9,7 @@ import hpp from 'hpp';
 import favicon from 'serve-favicon';
 import React from 'react';
 import { renderToString, renderToStaticMarkup } from 'react-dom/server';
-import { StaticRouter, match } from 'react-router-dom';
-import { matchRoutes } from 'react-router-config';
+import { StaticRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import chalk from 'chalk';
 import { trigger } from 'redial';
@@ -71,7 +70,7 @@ app.get('*', (req, res) => {
     res.send(renderHtml(store));
     return;
   }
-  const routerContext = {};
+  const routerContext = { dispatch };
   const component = (
     <Provider store={store}>
       <StaticRouter location={req.url} context={routerContext} history={history}>
@@ -85,9 +84,9 @@ app.get('*', (req, res) => {
       const state = getState();
       const htmlContent = renderToString(component, state);
       res.status(200).send(renderHtml(store, htmlContent));
-    }
+    },
   ).then(
-    () => console.log('999999999999999999999999')
+    () => console.log('999999999999999999999999'),
   );
 
   // Check if the render result contains a redirect, if so we need to set
@@ -96,11 +95,11 @@ app.get('*', (req, res) => {
     res.status(301).setHeader('Location', routerContext.url);
     res.end();
 
-    return;
+    // return;
   }
 
   // Checking is page is 404
-  const status = routerContext.status === '404' ? 404 : 200;
+  // const status = routerContext.status === '404' ? 404 : 200;
 
   // Pass the route and initial state into html template
 });
