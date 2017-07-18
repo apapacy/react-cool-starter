@@ -9,12 +9,11 @@ import hpp from 'hpp';
 import favicon from 'serve-favicon';
 import React from 'react';
 import { renderToString, renderToStaticMarkup } from 'react-dom/server';
-import ReactDOMStream from 'react-dom-stream/server';
-import StringStream from 'string-stream';
-import { StaticRouter } from 'react-router-dom';
+import { StaticRouter, match } from 'react-router-dom';
 import { matchRoutes } from 'react-router-config';
 import { Provider } from 'react-redux';
 import chalk from 'chalk';
+import { trigger } from 'redial';
 
 import createHistory from 'history/createMemoryHistory';
 import configureStore from './redux/store';
@@ -59,6 +58,8 @@ app.get('*', (req, res) => {
 
   const history = createHistory();
   const store = configureStore(history);
+  const { dispatch, getState } = store;
+
   const renderHtml = (store, htmlContent) => {  // eslint-disable-line no-shadow
     const html = renderToStaticMarkup(<Html store={store} htmlContent={htmlContent} />);
 
@@ -70,7 +71,6 @@ app.get('*', (req, res) => {
     res.send(renderHtml(store));
     return;
   }
-
   const routerContext = {};
   const component = (
     <Provider store={store}>
@@ -78,9 +78,17 @@ app.get('*', (req, res) => {
         <App />
       </StaticRouter>
     </Provider>);
-  const time = (new Date()).getTime();
-  const htmlContent = renderToString(component);
-  console.log((new Date()).getTime() - time);
+
+  trigger('fetch', component, routerContext).then(
+    () => {
+      console.log('*************************************');
+      const state = getState();
+      const htmlContent = renderToString(component, state);
+      res.status(200).send(renderHtml(store, htmlContent));
+    }
+  ).then(
+    () => console.log('999999999999999999999999')
+  );
 
   // Check if the render result contains a redirect, if so we need to set
   // the specific status and redirect header and end the response
@@ -95,7 +103,6 @@ app.get('*', (req, res) => {
   const status = routerContext.status === '404' ? 404 : 200;
 
   // Pass the route and initial state into html template
-  res.status(status).send(renderHtml(store, htmlContent));
 });
 
 if (port) {

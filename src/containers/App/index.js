@@ -8,13 +8,10 @@ import HomePage from '../Home';
 import UserInfoPage from '../UserInfo';
 import NotFoundPage from '../NotFound';
 
-
 import config from '../../config';
 // Import your global styles here
 import '../../theme/normalize.css';
 import styles from './styles.scss';
-
-console.log(styles);
 
 export default () => (
   <div className={styles.App}>

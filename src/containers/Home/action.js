@@ -1,11 +1,5 @@
 /* @flow */
-
-import type {
-  Dispatch,
-  GetState,
-  ThunkAction,
-  Reducer,
-} from '../../types';
+import axios from 'axios';
 
 
 export const USERS_INVALID = 'USERS_INVALID';
@@ -15,40 +9,23 @@ export const USERS_SUCCESS = 'USERS_SUCCESS';
 
 export const API_URL = 'https://jsonplaceholder.typicode.com/users';
 
-export const fetchUsers = (axios: any, URL: string = API_URL): any => {
+export const fetchUsers0 = (): any => {
   console.log('++++++++++++');
   return {
-    promise: client => client.get(URL),
+    promise: client => client.get(API_URL),
     events: [USERS_REQUESTING, USERS_SUCCESS, USERS_FAILURE],
   };
 };
 
-
-// Preventing dobule fetching data
-/* istanbul ignore next */
-const shouldFetchUsers = (state: Reducer): boolean => {
-  // In development, we will allow action dispatching
-  // or your reducer hot reloading won't updated on the view
-  console.log('is need fetch++');
-  if (__DEV__) return true;
-
-  const home = state.home;
-
-  if (home.readyStatus === USERS_SUCCESS) return false; // Preventing double fetching data
-
-  return true;
+export const fetchUsers = (): any => (dispatch) => {
+  console.log('fetchUsers');
+  dispatch({
+    type: USERS_REQUESTING,
+  });
+  axios.get(API_URL).then(
+    value => console.log(value.data) || dispatch({ value, type: USERS_SUCCESS }),
+    error => dispatch({ error, type: USERS_FAILURE }),
+  );
 };
 
-/* istanbul ignore next */
-export const fetchUsersIfNeeded = (): ThunkAction =>
-  (dispatch: Dispatch, getState: GetState, axios: any) => {
-    console.log('*****************');
-    /* istanbul ignore next */
-    if (shouldFetchUsers(getState())) {
-      /* istanbul ignore next */
-      return dispatch(fetchUsers(axios));
-    }
-
-    /* istanbul ignore next */
-    return null;
-  };
+export const fetchUsersIfNeeded = () => fetchUsers();

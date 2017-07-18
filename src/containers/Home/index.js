@@ -5,6 +5,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import type { Connector } from 'react-redux';
 import Helmet from 'react-helmet';
+import { provideHooks } from 'redial';
 
 import * as action from './action';
 import type { Home as HomeType, Dispatch, Reducer } from '../../types';
@@ -17,6 +18,10 @@ type Props = {
 };
 
 // Export this for unit testing more easily
+const preload = {
+  fetch: ({ dispatch }) => dispatch(action.fetchUsers()),
+};
+
 export class Home extends PureComponent {
   props: Props;
 
@@ -28,18 +33,11 @@ export class Home extends PureComponent {
     fetchUsersIfNeeded: () => {},
   };
 
-  constructor(...args) {
-    super(...args);
-    console.log('************************* in constructor');
-  }
-
   componentDidMount() {
-    console.log('********************** component did mount');
     this.props.fetchUsersIfNeeded();
   }
 
   componentWillMount() {
-    console.log('********************** component will mount');
     this.props.fetchUsersIfNeeded();
   }
 
@@ -75,4 +73,4 @@ const connector: Connector<{}, Props> = connect(
   }),
 );
 
-export default connector(Home);
+export default provideHooks(preload)(connector(Home));
